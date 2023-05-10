@@ -38,7 +38,10 @@ const addSchema = (url) => {
 }
 
 const removeSchema = (url) => {
+	core.debug(`Starting: removeSchema`)
 	const regex = /^https?:\/\//
+	core.debug(`removeSchema url: ${url}`)
+	core.debug(`removeSchema output: ${url.replace(regex, '')}`)
 	return url.replace(regex, '')
 }
 

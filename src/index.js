@@ -5,28 +5,30 @@ const { addSchema } = require('./helpers')
 const crypto = require('crypto')
 
 const {
-	GITHUB_DEPLOYMENT,
-	USER,
-	REPOSITORY,
-	BRANCH,
-	PR_NUMBER,
-	SHA,
-	IS_PR,
-	PR_LABELS,
-	CREATE_COMMENT,
-	DELETE_EXISTING_COMMENT,
-	UPDATE_EXISTING_COMMENT,
-	PR_PREVIEW_DOMAIN,
+	ACTOR,
 	ALIAS_DOMAINS,
 	ATTACH_COMMIT_METADATA,
-	LOG_URL,
+	BRANCH,
+	CREATE_COMMENT,
+	COMMENT_TITLE,
+	DELETE_EXISTING_COMMENT,
 	DEPLOY_PR_FROM_FORK,
+	GITHUB_DEPLOYMENT,
 	IS_FORK,
-	ACTOR
+	IS_PR,
+	LOG_URL,
+	PR_LABELS,
+	PR_NUMBER,
+	PR_PREVIEW_DOMAIN,
+	REPOSITORY,
+	SHA,
+	UPDATE_EXISTING_COMMENT,
+	USER,
+	VERCEL_PROJECT_NAME
 } = require('./config')
 
 // Following https://perishablepress.com/stop-using-unsafe-characters-in-urls/ only allow characters that won't break the URL.
-const urlSafeParameter = (input) => input.replace(/[^a-z0-9_~]/gi, '-')
+const urlSafeParameter = (input) => input.replace(/[^a-zA-Z0-9\-]/g, '-')
 
 const run = async () => {
 	const github = Github.init()
@@ -37,7 +39,7 @@ const run = async () => {
 		const body = `
 			Refusing to deploy this Pull Request to Vercel because it originates from @${ ACTOR }'s fork.
 
-			**@${ USER }** To allow this behaviour set \`DEPLOY_PR_FROM_FORK\` to true ([more info](https://github.com/BetaHuhn/deploy-to-vercel-action#deploying-a-pr-made-from-a-fork-or-dependabot)).
+			**@${ USER }** To allow this behavior set \`DEPLOY_PR_FROM_FORK\` to true ([more info](https://github.com/BetaHuhn/deploy-to-vercel-action#deploying-a-pr-made-from-a-fork-or-dependabot)).
 		`
 
 		const comment = await github.createComment(body)
@@ -84,6 +86,8 @@ const run = async () => {
 				.replace('{SHA}', SHA.substring(0, 7))
 				.toLowerCase()
 
+			core.debug(`alias: ${ alias }`)
+
 			const previewDomainSuffix = '.vercel.app'
 			let nextAlias = alias
 
@@ -104,6 +108,7 @@ const run = async () => {
 				}
 			}
 
+			core.debug(`nextAlias: ${nextAlias}`)
 			await vercel.assignAlias(nextAlias)
 			deploymentUrls.push(addSchema(nextAlias))
 		}
@@ -123,6 +128,7 @@ const run = async () => {
 					.replace('{SHA}', SHA.substring(0, 7))
 					.toLowerCase()
 
+				core.debug(`alias: ${alias}`)
 				await vercel.assignAlias(alias)
 
 				deploymentUrls.push(addSchema(alias))
@@ -151,30 +157,16 @@ const run = async () => {
 			if (CREATE_COMMENT) {
 				core.info('Creating new comment on PR')
 				const body = `
-					This pull request has been deployed to Vercel.
+					## ${ COMMENT_TITLE }
 
-					<table>
-						<tr>
-							<td><strong>Latest commit:</strong></td>
-							<td><code>${ SHA.substring(0, 7) }</code></td>
-						</tr>
-						<tr>
-							<td><strong>✅ Preview:</strong></td>
-							<td><a href='${ previewUrl }'>${ previewUrl }</a></td>
-						</tr>
-						<tr>
-							<td><strong>🔍 Inspect:</strong></td>
-							<td><a href='${ deployment.inspectorUrl }'>${ deployment.inspectorUrl }</a></td>
-						</tr>
-						<tr>
-							<td><strong>🕐 Updated:</strong></td>
-							<td>${ new Date().toUTCString() }</td>
-						</tr>
-					</table>
+					| Name | Preview | Inspect | Commit | Updated (UTC) |
+					| :--- | :------ | :------ | :----| :---- |
+					| **${ VERCEL_PROJECT_NAME }** | ✅ [Preview](${ previewUrl}) | 🔍 [Inspect](${ deployment.inspectorUrl }) | \`${ SHA.substring(0,7)}\` |${ new Date().toUTCString() } |
 
-					[View Workflow Logs](${ LOG_URL })
+					[Deployment Logs](${ LOG_URL })
 				`
 
+				core.debug(`createComment UPDATE_EXISTING_COMMENT: ${ UPDATE_EXISTING_COMMENT }`)
 				const comment = await github.createComment(body, UPDATE_EXISTING_COMMENT)
 				core.info(`Commented: ${ comment.html_url }`)
 			}

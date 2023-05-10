@@ -8,6 +8,7 @@ const {
 	VERCEL_SCOPE,
 	VERCEL_ORG_ID,
 	VERCEL_PROJECT_ID,
+	VERCEL_PROJECT_NAME,
 	SHA,
 	USER,
 	REPOSITORY,
@@ -23,6 +24,7 @@ const init = () => {
 	core.info('Setting environment variables for Vercel CLI')
 	core.exportVariable('VERCEL_ORG_ID', VERCEL_ORG_ID)
 	core.exportVariable('VERCEL_PROJECT_ID', VERCEL_PROJECT_ID)
+	//core.exportVariable('VERCEL_PROJECT_ID', getProject.id(VERCEL_PROJECT_NAME))
 
 	let deploymentUrl
 
@@ -82,6 +84,8 @@ const init = () => {
 	}
 
 	const assignAlias = async (aliasUrl) => {
+		core.debug(`Starting: assignAlias`)
+		core.debug(`assignAlias aliasUrl: ${ aliasUrl }`)
 		const commandArguments = [ `--token=${ VERCEL_TOKEN }`, 'alias', 'set', deploymentUrl, removeSchema(aliasUrl) ]
 
 		if (VERCEL_SCOPE) {
@@ -94,14 +98,28 @@ const init = () => {
 	}
 
 	const getDeployment = async () => {
-		const url = `https://api.vercel.com/v11/now/deployments/get?url=${ deploymentUrl }`
+		const url = `https://api.vercel.com/v13/deployments/${ deploymentUrl }${ VERCEL_ORG_ID ? `?teamId=${ VERCEL_ORG_ID }` : '' }`
+
 		const options = {
 			headers: {
 				Authorization: `Bearer ${ VERCEL_TOKEN }`
 			}
 		}
 
-		const res = await got(url, options).json()
+		const res = await got.got(url, options).json()
+
+		return res
+	}
+
+	const getProject = async (projectName) => {
+		const url = `https://api.vercel.com/v9/projects/${ projectName }${ VERCEL_ORG_ID ? `?teamId=${ VERCEL_ORG_ID }` : '' }`
+		const options = {
+			headers: {
+				Authorization: `Bearer ${ VERCEL_TOKEN }`
+			}
+		}
+
+		const res = await got.got(url, options).json()
 
 		return res
 	}
@@ -110,7 +128,8 @@ const init = () => {
 		deploy,
 		assignAlias,
 		deploymentUrl,
-		getDeployment
+		getDeployment,
+		getProject
 	}
 }
 
