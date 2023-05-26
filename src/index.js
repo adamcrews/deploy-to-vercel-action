@@ -108,7 +108,7 @@ const run = async () => {
 				}
 			}
 
-			core.debug(`nextAlias: ${nextAlias}`)
+			core.debug(`nextAlias: ${ nextAlias }`)
 			await vercel.assignAlias(nextAlias)
 			deploymentUrls.push(addSchema(nextAlias))
 		}
@@ -128,7 +128,7 @@ const run = async () => {
 					.replace('{SHA}', SHA.substring(0, 7))
 					.toLowerCase()
 
-				core.debug(`alias: ${alias}`)
+				core.debug(`alias: ${ alias }`)
 				await vercel.assignAlias(alias)
 
 				deploymentUrls.push(addSchema(alias))
@@ -161,7 +161,7 @@ const run = async () => {
 
 					| Name | Preview | Inspect | Commit | Updated (UTC) |
 					| :--- | :------ | :------ | :----| :---- |
-					| **${ VERCEL_PROJECT_NAME }** | ✅ [Preview](${ previewUrl}) | 🔍 [Inspect](${ deployment.inspectorUrl }) | \`${ SHA.substring(0,7)}\` |${ new Date().toUTCString() } |
+					| **${ VERCEL_PROJECT_NAME }** | ✅ [Preview](${ previewUrl }) | 🔍 [Inspect](${ deployment.inspectorUrl }) | \`${ SHA.substring(0, 7) }\` |${ new Date().toUTCString() } |
 
 					[Deployment Logs](${ LOG_URL })
 				`

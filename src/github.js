@@ -27,7 +27,7 @@ const init = () => {
 			repo: REPOSITORY,
 			ref: REF,
 			required_contexts: [],
-			environment: GITHUB_DEPLOYMENT_ENV ? GITHUB_DEPLOYMENT_ENV : (PRODUCTION ? 'Production' : 'Preview'),
+			environment: GITHUB_DEPLOYMENT_ENV ? GITHUB_DEPLOYMENT_ENV : (PRODUCTION ? 'Production' : 'Preview'), // eslint-disable-line no-nested-ternary
 			description: 'Deploy to Vercel',
 			auto_merge: false
 		})
