@@ -1,6 +1,6 @@
-name: 'Deploy to Vercel Action'
-description: 'Deploy your project to Vercel using GitHub Actions. Supports PR previews and GitHub deployments.'
-author: 'BetaHuhn'
+name: "Deploy to Vercel Action"
+description: "Deploy your project to Vercel using GitHub Actions. Supports PR previews and GitHub deployments."
+author: "BetaHuhn"
 
 inputs:
   GITHUB_TOKEN:
@@ -14,10 +14,14 @@ inputs:
   VERCEL_PROJECT_ID:
     description: |
       Id of your Vercel project (can be found in .vercel/project.json).
-    required: false
+    required: true
+  VERCEL_PROJECT_NAME:
+    description: |
+      Name of your Vercel project.
+    required: true
   VERCEL_ORG_ID:
     description: |
-      Id of your Vercel organisation (can be found in .vercel/project.json).
+      Id of your Vercel organization (can be found in .vercel/project.json).
     required: false
   PRODUCTION:
     description: |
@@ -35,9 +39,13 @@ inputs:
     description: |
       Create PR comment when deploying (default: true).
     required: false
+  UPDATE_EXISTING_COMMENT:
+    description: |
+      Update existing PR comment when redeploying PR (default: false).
+    required: false
   DELETE_EXISTING_COMMENT:
     description: |
-      Delete existing PR comment when redeploying PR (default: true).
+      Delete existing PR comment when redeploying PR (default: true, ignored if UPDATE_EXISTING_COMMENT is true).
     required: false
   ATTACH_COMMIT_METADATA:
     description: |
@@ -86,22 +94,22 @@ inputs:
 
 outputs:
   PREVIEW_URL:
-    description: 'Main deployment preview URL.'
+    description: "Main deployment preview URL."
   DEPLOYMENT_URLS:
-    description: 'All assigned deployment URLs.'
+    description: "All assigned deployment URLs."
   DEPLOYMENT_CREATED:
-    description: 'True if a Vercel deployment was created.'
+    description: "True if a Vercel deployment was created."
   COMMENT_CREATED:
-    description: 'True if a comment was created on the PR or commit.'
+    description: "True if a comment was created on the PR or commit."
   DEPLOYMENT_INSPECTOR_URL:
-    description: 'Main deployment inspection url.'
+    description: "Main deployment inspection url."
   DEPLOYMENT_UNIQUE_URL:
-    description: 'The unique deployment url on Vercel'
+    description: "The unique deployment url on Vercel"
 
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: "node16"
+  main: "dist/index.js"
 
 branding:
-  icon: 'triangle'
-  color: 'white'
+  icon: "triangle"
+  color: "white"

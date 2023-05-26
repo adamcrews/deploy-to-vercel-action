@@ -10,11 +10,11 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 18
       - name: Cache node modules
         uses: c-hive/gha-npm-cache@v1
       - name: Install dependencies
@@ -28,11 +28,11 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 18
       - name: Cache node modules
         uses: c-hive/gha-npm-cache@v1
       - name: Install dependencies
@@ -43,8 +43,8 @@ jobs:
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          GIT_AUTHOR_NAME: "BetaHuhn Bot"
-          GIT_AUTHOR_EMAIL: "bot@mxis.ch"
-          GIT_COMMITTER_NAME: "BetaHuhn Bot"
-          GIT_COMMITTER_EMAIL: "bot@mxis.ch"
+          GIT_AUTHOR_NAME: "Shroom Bot"
+          GIT_AUTHOR_EMAIL: "release@shroom.com"
+          GIT_COMMITTER_NAME: "Shroom Bot"
+          GIT_COMMITTER_EMAIL: "release@shroom.com"
           COMMIT_ASSETS: dist

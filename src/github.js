@@ -1,29 +1,33 @@
+const core = require('@actions/core')
 const github = require('@actions/github')
 
+const config = require('./config')
+
 const {
-	GITHUB_TOKEN,
-	USER,
-	REPOSITORY,
-	PRODUCTION,
-	PR_NUMBER,
-	REF,
+	COMMENT_TITLE,
+	GITHUB_DEPLOYMENT_ENV,
 	LOG_URL,
 	PR_LABELS,
-	GITHUB_DEPLOYMENT_ENV
-} = require('./config')
+	PR_NUMBER,
+	PRODUCTION,
+	REF,
+	REPOSITORY,
+	USER
+} = config
 
 const init = () => {
-	const client = github.getOctokit(GITHUB_TOKEN, { previews: [ 'flash', 'ant-man' ] })
+	const myToken = core.getInput('GITHUB_TOKEN', { required: true })
+	const client = github.getOctokit(myToken, { previews: [ 'flash', 'ant-man' ] })
 
 	let deploymentId
 
 	const createDeployment = async () => {
-		const deployment = await client.repos.createDeployment({
+		const deployment = await client.rest.repos.createDeployment({
 			owner: USER,
 			repo: REPOSITORY,
 			ref: REF,
 			required_contexts: [],
-			environment: GITHUB_DEPLOYMENT_ENV || (PRODUCTION ? 'Production' : 'Preview'),
+			environment: GITHUB_DEPLOYMENT_ENV ? GITHUB_DEPLOYMENT_ENV : (PRODUCTION ? 'Production' : 'Preview'),
 			description: 'Deploy to Vercel',
 			auto_merge: false
 		})
@@ -34,9 +38,10 @@ const init = () => {
 	}
 
 	const updateDeployment = async (status, url) => {
+		core.debug(`Starting: updateDeployment`)
 		if (!deploymentId) return
 
-		const deploymentStatus = await client.repos.createDeploymentStatus({
+		const deploymentStatus = await client.rest.repos.createDeploymentStatus({
 			owner: USER,
 			repo: REPOSITORY,
 			deployment_id: deploymentId,
@@ -49,18 +54,23 @@ const init = () => {
 		return deploymentStatus.data
 	}
 
-	const deleteExistingComment = async () => {
-		const { data } = await client.issues.listComments({
+	const findExistingComment = async () => {
+		const { data } = await client.rest.issues.listComments({
 			owner: USER,
 			repo: REPOSITORY,
 			issue_number: PR_NUMBER
 		})
+		core.debug(`findExistingComment data: ${ JSON.stringify(data) }`)
+		return data.find((comment) =>
+		// comment.body.includes(`This PR has been deployed to Vercel: ${ PR_PREVIEW_DOMAIN }`)
+			comment.body.includes(COMMENT_TITLE)
+		)
+	}
 
-		if (data.length < 1) return
-
-		const comment = data.find((comment) => comment.body.includes('This pull request has been deployed to Vercel.'))
+	const deleteExistingComment = async () => {
+		const comment = await findExistingComment()
 		if (comment) {
-			await client.issues.deleteComment({
+			await client.rest.issues.deleteComment({
 				owner: USER,
 				repo: REPOSITORY,
 				comment_id: comment.id
@@ -70,22 +80,34 @@ const init = () => {
 		}
 	}
 
-	const createComment = async (body) => {
+	const createComment = async (body, updateExisting = false) => {
+		core.debug(`Starting: createComment`)
+		core.debug(`createComment body: ${ body }`)
 		// Remove indentation
 		const dedented = body.replace(/^[^\S\n]+/gm, '')
 
-		const comment = await client.issues.createComment({
+		const commentParams = {
 			owner: USER,
 			repo: REPOSITORY,
 			issue_number: PR_NUMBER,
 			body: dedented
-		})
+		}
+
+		const existingComment = updateExisting ? await findExistingComment() : null
+		core.debug(`existingComment: ${ existingComment }`)
+		const comment = existingComment ?
+			await client.rest.issues.updateComment({
+				comment_id: existingComment.id, ...commentParams
+			}) :
+			await client.rest.issues.createComment(commentParams)
+
+		core.debug(`comment: ${ comment }`)
 
 		return comment.data
 	}
 
 	const addLabel = async () => {
-		const label = await client.issues.addLabels({
+		const label = await client.rest.issues.addLabels({
 			owner: USER,
 			repo: REPOSITORY,
 			issue_number: PR_NUMBER,
@@ -96,7 +118,7 @@ const init = () => {
 	}
 
 	const getCommit = async () => {
-		const { data } = await client.repos.getCommit({
+		const { data } = await client.rest.repos.getCommit({
 			owner: USER,
 			repo: REPOSITORY,
 			ref: REF
