@@ -11,15 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/betahuhn/deploy-to-vercel-action.git"
+    "url": "git+https://github.com/adamcrews/deploy-to-vercel-action.git"
   },
   "keywords": [],
   "author": "Maximilian Schiller <schiller@mxis.ch>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/betahuhn/deploy-to-vercel-action/issues"
+    "url": "https://github.com/adamcrews/deploy-to-vercel-action/issues"
   },
-  "homepage": "https://github.com/marketplace/actions/deploy-to-vercel-action",
+  "homepage": "https://github.com/adamcrews/deploy-to-vercel-action",
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/exec": "^1.1.1",
