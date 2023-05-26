@@ -8,7 +8,7 @@ const {
 	VERCEL_SCOPE,
 	VERCEL_ORG_ID,
 	VERCEL_PROJECT_ID,
-	VERCEL_PROJECT_NAME,
+	VERCEL_PROJECT_NAME, // eslint-disable-line no-unused-vars
 	SHA,
 	USER,
 	REPOSITORY,
@@ -24,7 +24,7 @@ const init = () => {
 	core.info('Setting environment variables for Vercel CLI')
 	core.exportVariable('VERCEL_ORG_ID', VERCEL_ORG_ID)
 	core.exportVariable('VERCEL_PROJECT_ID', VERCEL_PROJECT_ID)
-	//core.exportVariable('VERCEL_PROJECT_ID', getProject.id(VERCEL_PROJECT_NAME))
+	// core.exportVariable('VERCEL_PROJECT_ID', getProject.id(VERCEL_PROJECT_NAME))
 
 	let deploymentUrl
 
