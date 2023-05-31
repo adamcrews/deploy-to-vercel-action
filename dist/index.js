@@ -14221,7 +14221,7 @@ const init = () => {
 			repo: REPOSITORY,
 			ref: REF,
 			required_contexts: [],
-			environment: GITHUB_DEPLOYMENT_ENV ? GITHUB_DEPLOYMENT_ENV : (PRODUCTION ? 'Production' : 'Preview'),
+			environment: GITHUB_DEPLOYMENT_ENV ? GITHUB_DEPLOYMENT_ENV : (PRODUCTION ? 'Production' : 'Preview'), // eslint-disable-line no-nested-ternary
 			description: 'Deploy to Vercel',
 			auto_merge: false
 		})
@@ -14387,8 +14387,8 @@ const addSchema = (url) => {
 const removeSchema = (url) => {
 	core.debug(`Starting: removeSchema`)
 	const regex = /^https?:\/\//
-	core.debug(`removeSchema url: ${url}`)
-	core.debug(`removeSchema output: ${url.replace(regex, '')}`)
+	core.debug(`removeSchema url: ${ url }`)
+	core.debug(`removeSchema output: ${ url.replace(regex, '') }`)
 	return url.replace(regex, '')
 }
 
@@ -14413,7 +14413,7 @@ const {
 	VERCEL_SCOPE,
 	VERCEL_ORG_ID,
 	VERCEL_PROJECT_ID,
-	VERCEL_PROJECT_NAME,
+	VERCEL_PROJECT_NAME, // eslint-disable-line no-unused-vars
 	SHA,
 	USER,
 	REPOSITORY,
@@ -14429,7 +14429,7 @@ const init = () => {
 	core.info('Setting environment variables for Vercel CLI')
 	core.exportVariable('VERCEL_ORG_ID', VERCEL_ORG_ID)
 	core.exportVariable('VERCEL_PROJECT_ID', VERCEL_PROJECT_ID)
-	//core.exportVariable('VERCEL_PROJECT_ID', getProject.id(VERCEL_PROJECT_NAME))
+	// core.exportVariable('VERCEL_PROJECT_ID', getProject.id(VERCEL_PROJECT_NAME))
 
 	let deploymentUrl
 
@@ -20650,7 +20650,7 @@ var __webpack_exports__ = {};
 const core = __nccwpck_require__(2186)
 const Github = __nccwpck_require__(8396)
 const Vercel = __nccwpck_require__(847)
-const { addSchema } = __nccwpck_require__(8505)
+const { addSchema, removeSchema } = __nccwpck_require__(8505)
 const crypto = __nccwpck_require__(6113)
 
 const {
@@ -20757,7 +20757,7 @@ const run = async () => {
 				}
 			}
 
-			core.debug(`nextAlias: ${nextAlias}`)
+			core.debug(`nextAlias: ${ nextAlias }`)
 			await vercel.assignAlias(nextAlias)
 			deploymentUrls.push(addSchema(nextAlias))
 		}
@@ -20777,7 +20777,7 @@ const run = async () => {
 					.replace('{SHA}', SHA.substring(0, 7))
 					.toLowerCase()
 
-				core.debug(`alias: ${alias}`)
+				core.debug(`alias: ${ alias }`)
 				await vercel.assignAlias(alias)
 
 				deploymentUrls.push(addSchema(alias))
@@ -20810,7 +20810,7 @@ const run = async () => {
 
 					| Name | Preview | Inspect | Commit | Updated (UTC) |
 					| :--- | :------ | :------ | :----| :---- |
-					| **${ VERCEL_PROJECT_NAME }** | ✅ [Preview](${ previewUrl}) | 🔍 [Inspect](${ deployment.inspectorUrl }) | \`${ SHA.substring(0,7)}\` |${ new Date().toUTCString() } |
+					| **${ VERCEL_PROJECT_NAME }** | ✅ [Preview](${ previewUrl }) | 🔍 [Inspect](${ deployment.inspectorUrl }) | \`${ SHA.substring(0, 7) }\` |${ new Date().toUTCString() } |
 
 					[Deployment Logs](${ LOG_URL })
 				`
@@ -20828,6 +20828,9 @@ const run = async () => {
 			}
 		}
 
+		const feedbackUrl = `https://vercel.live/open-feedback/${ removeSchema(deploymentUrls[deploymentUrls.length - 1]) }`
+		const markdownLine = `| **${ VERCEL_PROJECT_NAME }** | ✅ Ready ([Inspect](${ deployment.inspectorUrl })) | [Visit Preview](${ previewUrl }) | 💬 **[Add feedback](${ feedbackUrl })** | <code>${ SHA.substring(0, 7) }</code> |${ new Date().toUTCString() } |`
+
 		core.setOutput('PREVIEW_URL', previewUrl)
 		core.setOutput('DEPLOYMENT_URLS', deploymentUrls)
 		core.setOutput('DEPLOYMENT_UNIQUE_URL', deploymentUrls[deploymentUrls.length - 1])
@@ -20835,6 +20838,7 @@ const run = async () => {
 		core.setOutput('DEPLOYMENT_INSPECTOR_URL', deployment.inspectorUrl)
 		core.setOutput('DEPLOYMENT_CREATED', true)
 		core.setOutput('COMMENT_CREATED', IS_PR && CREATE_COMMENT)
+		core.setOutput('MARKDOWN_LINE', markdownLine)
 
 		core.info('Done')
 	} catch (err) {

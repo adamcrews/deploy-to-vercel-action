@@ -105,6 +105,8 @@ outputs:
     description: "Main deployment inspection url."
   DEPLOYMENT_UNIQUE_URL:
     description: "The unique deployment url on Vercel"
+  MARKDOWN_LINE:
+    description: "A line of markdown with deployment info."
 
 runs:
   using: "node16"
