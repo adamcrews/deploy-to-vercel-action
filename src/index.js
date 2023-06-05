@@ -1,7 +1,7 @@
 const core = require('@actions/core')
 const Github = require('./github')
 const Vercel = require('./vercel')
-const { addSchema } = require('./helpers')
+const { addSchema, removeSchema } = require('./helpers')
 const crypto = require('crypto')
 
 const {
@@ -179,6 +179,9 @@ const run = async () => {
 			}
 		}
 
+		const feedbackUrl = `https://vercel.live/open-feedback/${ removeSchema(deploymentUrls[deploymentUrls.length - 1]) }`
+		const markdownLine = `| **${ VERCEL_PROJECT_NAME }** | ✅ Ready ([Inspect](${ deployment.inspectorUrl })) | [Visit Preview](${ previewUrl }) | 💬 **[Add feedback](${ feedbackUrl })** | <code>${ SHA.substring(0, 7) }</code> |${ new Date().toUTCString() } |`
+
 		core.setOutput('PREVIEW_URL', previewUrl)
 		core.setOutput('DEPLOYMENT_URLS', deploymentUrls)
 		core.setOutput('DEPLOYMENT_UNIQUE_URL', deploymentUrls[deploymentUrls.length - 1])
@@ -186,6 +189,7 @@ const run = async () => {
 		core.setOutput('DEPLOYMENT_INSPECTOR_URL', deployment.inspectorUrl)
 		core.setOutput('DEPLOYMENT_CREATED', true)
 		core.setOutput('COMMENT_CREATED', IS_PR && CREATE_COMMENT)
+		core.setOutput('MARKDOWN_LINE', markdownLine)
 
 		core.info('Done')
 	} catch (err) {
