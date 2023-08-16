@@ -20829,7 +20829,7 @@ const run = async () => {
 		}
 
 		const feedbackUrl = `https://vercel.live/open-feedback/${ removeSchema(deploymentUrls[deploymentUrls.length - 1]) }`
-		const markdownLine = `| **${ VERCEL_PROJECT_NAME }** | ✅ Ready ([Inspect](${ deployment.inspectorUrl })) | [Visit Preview](${ previewUrl }) | 💬 **[Add feedback](${ feedbackUrl })** | <code>${ SHA.substring(0, 7) }</code> |${ new Date().toUTCString() } |`
+		const markdownLine = `| **${ VERCEL_PROJECT_NAME }** | ✅ Ready ([Build Info](${ deployment.inspectorUrl })) | [Visit Preview](${ previewUrl }) | 💬 **[Add feedback](${ feedbackUrl })** | <code>${ SHA.substring(0, 7) }</code> |${ new Date().toUTCString() } |`
 
 		core.setOutput('PREVIEW_URL', previewUrl)
 		core.setOutput('DEPLOYMENT_URLS', deploymentUrls)
@@ -20843,6 +20843,9 @@ const run = async () => {
 		core.info('Done')
 	} catch (err) {
 		await github.updateDeployment('failure')
+
+		const markdownLine = `| **${ VERCEL_PROJECT_NAME }** | 🚫 Failed ([Build Info](${ LOG_URL })) | | | <code>${ SHA.substring(0, 7) }</code> |${ new Date().toUTCString() } |`
+		core.setOutput('MARKDOWN_LINE', markdownLine)
 		core.setFailed(err.message)
 	}
 }
