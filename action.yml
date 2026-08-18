@@ -109,7 +109,7 @@ outputs:
     description: "A line of markdown with deployment info."
 
 runs:
-  using: "node16"
+  using: "node24"
   main: "dist/index.js"
 
 branding:

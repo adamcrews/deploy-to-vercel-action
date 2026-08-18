@@ -1,5 +1,4 @@
 const core = require('@actions/core')
-const got = require('got')
 const { exec, removeSchema } = require('./helpers')
 
 const {
@@ -20,16 +19,55 @@ const {
 	FORCE
 } = require('./config')
 
+// The CLI is fetched at runtime with `npx` rather than bundled, so `vercel` is a devDependency
+// purely to give Dependabot a version to bump. ncc inlines this value at build time.
+const VERCEL_CLI_RANGE = require('../package.json').devDependencies.vercel
+const VERCEL_CLI_VERSION = VERCEL_CLI_RANGE.replace(/^[^\d]*/, '')
+
+if (!(/^\d+\.\d+\.\d+/).test(VERCEL_CLI_VERSION)) {
+	throw new Error(`Expected an exact Vercel CLI version in package.json devDependencies, got "${ VERCEL_CLI_RANGE }"`)
+}
+
+const parseDeploymentUrl = (output) => {
+	const urls = output.match(/https?:\/\/[^\s]+/g)
+	if (!urls || urls.length === 0) {
+		throw new Error(`Could not parse deploymentUrl from Vercel CLI output: ${ output }`)
+	}
+
+	return removeSchema(urls[urls.length - 1])
+}
+
+const fetchJson = async (url) => {
+	const res = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${ VERCEL_TOKEN }`
+		}
+	})
+
+	if (!res.ok) {
+		const body = await res.text()
+		throw new Error(`Vercel API request failed (${ res.status } ${ res.statusText }): ${ body }`)
+	}
+
+	return res.json()
+}
+
 const init = () => {
 	core.info('Setting environment variables for Vercel CLI')
 	core.exportVariable('VERCEL_ORG_ID', VERCEL_ORG_ID)
 	core.exportVariable('VERCEL_PROJECT_ID', VERCEL_PROJECT_ID)
-	// core.exportVariable('VERCEL_PROJECT_ID', getProject.id(VERCEL_PROJECT_NAME))
+
+	core.info(`Using Vercel CLI ${ VERCEL_CLI_VERSION }`)
 
 	let deploymentUrl
 
+	const runVercel = (args) => {
+		return exec('npx', [ '--yes', `vercel@${ VERCEL_CLI_VERSION }`, ...args ], WORKING_DIRECTORY)
+	}
+
 	const deploy = async (commit) => {
-		let commandArguments = [ `--token=${ VERCEL_TOKEN }` ]
+		// --yes skips setup prompts; VERCEL_ORG_ID / VERCEL_PROJECT_ID select the target (required since CLI 55).
+		let commandArguments = [ `--token=${ VERCEL_TOKEN }`, '--yes' ]
 
 		if (VERCEL_SCOPE) {
 			commandArguments.push(`--scope=${ VERCEL_SCOPE }`)
@@ -73,12 +111,8 @@ const init = () => {
 		}
 
 		core.info('Starting deploy with Vercel CLI')
-		const output = await exec('vercel', commandArguments, WORKING_DIRECTORY)
-		const parsed = output.match(/(?<=https?:\/\/)(.*)/g)[0]
-
-		if (!parsed) throw new Error('Could not parse deploymentUrl')
-
-		deploymentUrl = parsed
+		const output = await runVercel(commandArguments)
+		deploymentUrl = parseDeploymentUrl(output)
 
 		return deploymentUrl
 	}
@@ -86,13 +120,13 @@ const init = () => {
 	const assignAlias = async (aliasUrl) => {
 		core.debug(`Starting: assignAlias`)
 		core.debug(`assignAlias aliasUrl: ${ aliasUrl }`)
-		const commandArguments = [ `--token=${ VERCEL_TOKEN }`, 'alias', 'set', deploymentUrl, removeSchema(aliasUrl) ]
+		const commandArguments = [ `--token=${ VERCEL_TOKEN }`, '--yes', 'alias', 'set', deploymentUrl, removeSchema(aliasUrl) ]
 
 		if (VERCEL_SCOPE) {
 			commandArguments.push(`--scope=${ VERCEL_SCOPE }`)
 		}
 
-		const output = await exec('vercel', commandArguments, WORKING_DIRECTORY)
+		const output = await runVercel(commandArguments)
 
 		return output
 	}
@@ -100,28 +134,13 @@ const init = () => {
 	const getDeployment = async () => {
 		const url = `https://api.vercel.com/v13/deployments/${ deploymentUrl }${ VERCEL_ORG_ID ? `?teamId=${ VERCEL_ORG_ID }` : '' }`
 
-		const options = {
-			headers: {
-				Authorization: `Bearer ${ VERCEL_TOKEN }`
-			}
-		}
-
-		const res = await got.got(url, options).json()
-
-		return res
+		return fetchJson(url)
 	}
 
 	const getProject = async (projectName) => {
 		const url = `https://api.vercel.com/v9/projects/${ projectName }${ VERCEL_ORG_ID ? `?teamId=${ VERCEL_ORG_ID }` : '' }`
-		const options = {
-			headers: {
-				Authorization: `Bearer ${ VERCEL_TOKEN }`
-			}
-		}
 
-		const res = await got.got(url, options).json()
-
-		return res
+		return fetchJson(url)
 	}
 
 	return {

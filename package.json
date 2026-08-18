@@ -20,18 +20,19 @@
     "url": "https://github.com/adamcrews/deploy-to-vercel-action/issues"
   },
   "homepage": "https://github.com/adamcrews/deploy-to-vercel-action",
+  "engines": {
+    "node": ">=24"
+  },
   "dependencies": {
-    "@actions/core": "^1.10.0",
-    "@actions/exec": "^1.1.1",
-    "@actions/github": "^5.1.1",
+    "@actions/core": "^2.0.3",
+    "@actions/github": "^8.0.1",
     "action-input-parser": "^1.2.38",
-    "dotenv": "^16.0.3",
-    "got": "^12.6.0",
-    "vercel": "^31.4.0"
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "@betahuhn/config": "^1.2.0",
-    "@vercel/ncc": "^0.36.1",
-    "eslint": "^8.40.0"
+    "@vercel/ncc": "^0.45.0",
+    "eslint": "^8.57.1",
+    "vercel": "^59.1.4"
   }
 }

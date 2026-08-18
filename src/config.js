@@ -1,7 +1,7 @@
 const core = require('@actions/core')
 const github = require('@actions/github')
 const parser = require('action-input-parser')
-require('dotenv').config()
+require('dotenv').config({ quiet: true })
 
 const IS_PR = [ 'pull_request', 'pull_request_target' ].includes(github.context.eventName)
 
