@@ -8,7 +8,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Update latest tag
-        uses: Actions-R-Us/actions-tagger@latest
+        uses: Actions-R-Us/actions-tagger@v2
         env:
           GITHUB_TOKEN: "${{ secrets.GH_PAT }}"
         with:

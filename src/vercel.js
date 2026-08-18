@@ -19,7 +19,14 @@ const {
 	FORCE
 } = require('./config')
 
-const VERCEL_CLI_VERSION = require('../package.json').dependencies.vercel.replace(/^[^\d]*/, '')
+// The CLI is fetched at runtime with `npx` rather than bundled, so `vercel` is a devDependency
+// purely to give Dependabot a version to bump. ncc inlines this value at build time.
+const VERCEL_CLI_RANGE = require('../package.json').devDependencies.vercel
+const VERCEL_CLI_VERSION = VERCEL_CLI_RANGE.replace(/^[^\d]*/, '')
+
+if (!(/^\d+\.\d+\.\d+/).test(VERCEL_CLI_VERSION)) {
+	throw new Error(`Expected an exact Vercel CLI version in package.json devDependencies, got "${ VERCEL_CLI_RANGE }"`)
+}
 
 const parseDeploymentUrl = (output) => {
 	const urls = output.match(/https?:\/\/[^\s]+/g)

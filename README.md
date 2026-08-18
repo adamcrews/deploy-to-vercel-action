@@ -44,9 +44,9 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Deploy to Vercel Action
-        uses: BetaHuhn/deploy-to-vercel-action@v1
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -54,21 +54,35 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 ```
 
+### Requirements
+
+This Action runs on the **Node 24** Actions runtime (`runs.using: node24`). GitHub-hosted runners support it out of the box; self-hosted runners need a runner version recent enough to provide the Node 24 runtime. Older runners will fail with an unsupported-runtime error.
+
+The Vercel CLI is **not** bundled into this Action. It is fetched at deploy time with `npx vercel@<pinned version>`, which means:
+
+- The runner needs network access to the npm registry, not just to Vercel.
+- The first deploy in a job pays a one-time CLI download (tens of MB).
+- If your repository has an `.npmrc` pointing at a private or authenticated registry, `npx` runs in `WORKING_DIRECTORY` and will pick it up. Make sure the Vercel CLI is resolvable from there, or the install step will fail.
+
+The pinned CLI version is tracked as a `devDependency` in this repository's `package.json` so Dependabot can propose upgrades; it is inlined into `dist/index.js` at build time.
+
 ### Versioning
 
 To always use the latest version of the Action add the `latest` tag to the action name like this:
 
 ```yml
-uses: BetaHuhn/deploy-to-vercel-action@latest
+uses: adamcrews/deploy-to-vercel-action@latest
 ```
 
-If you want to make sure that your Workflow doesn't suddenly break when a new major version is released, use the `v1` tag instead (recommended usage):
+If you want to make sure that your Workflow doesn't suddenly break when a new major version is released, use a major version tag instead (recommended usage):
 
 ```yml
-uses: BetaHuhn/deploy-to-vercel-action@v1
+uses: adamcrews/deploy-to-vercel-action@v2
 ```
 
-With the `v1` tag you will always get the latest non-breaking version which will include potential bug fixes in the future. If you use a specific version, make sure to regularly check if a new version is available, or enable Dependabot.
+With a major version tag you will always get the latest non-breaking version which will include potential bug fixes in the future. If you use a specific version, make sure to regularly check if a new version is available, or enable Dependabot.
+
+> **Note on major versions:** `v2` is the first release to run on the Node 24 runtime and to invoke a pinned Vercel CLI via `npx`. The `v1` line targets the retired `node16` runtime and an older Vercel CLI, so it will stop working as GitHub removes that runtime. See [Requirements](#requirements) before upgrading.
 
 ## ⚙️ Action Inputs
 
@@ -188,7 +202,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - id: script
-        uses: actions/github-script@v3
+        uses: actions/github-script@v9
         with:
           script: |
             const isPr = [ 'pull_request', 'pull_request_target' ].includes(context.eventName)
@@ -196,13 +210,13 @@ jobs:
             core.setOutput('repo', isPr ? context.payload.pull_request.head.repo.full_name : context.repo.full_name)
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.script.outputs.ref }}
           repository: ${{ steps.script.outputs.repo }}
 
       - name: Deploy to Vercel Action
-        uses: BetaHuhn/deploy-to-vercel-action@develop
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -236,9 +250,9 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Deploy to Vercel Action
-        uses: BetaHuhn/deploy-to-vercel-action@v1
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -263,9 +277,9 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Deploy to Vercel Action
-        uses: BetaHuhn/deploy-to-vercel-action@v1
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -291,9 +305,9 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Deploy to Vercel Action
-        uses: BetaHuhn/deploy-to-vercel-action@v1
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -320,9 +334,9 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Deploy to Vercel Action
-        uses: BetaHuhn/deploy-to-vercel-action@v1
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -357,9 +371,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Deploy to Vercel Action
-        uses: BetaHuhn/deploy-to-vercel-action@v1
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -386,10 +400,10 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Deploy to Vercel Action
         id: vercel-deploy
-        uses: BetaHuhn/deploy-to-vercel-action@v1
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -436,10 +450,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       # maybe do something else first
       - name: Deploy to Vercel Action
-        uses: BetaHuhn/deploy-to-vercel-action@v1
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -470,7 +484,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - id: script
-        uses: actions/github-script@v3
+        uses: actions/github-script@v9
         with:
           script: |
             const isPr = [ 'pull_request', 'pull_request_target' ].includes(context.eventName)
@@ -478,13 +492,13 @@ jobs:
             core.setOutput('repo', isPr ? context.payload.pull_request.head.repo.full_name : context.repo.full_name)
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.script.outputs.ref }}
           repository: ${{ steps.script.outputs.repo }}
 
       - name: Deploy to Vercel Action
-        uses: BetaHuhn/deploy-to-vercel-action@develop
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -511,9 +525,9 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Deploy to Vercel Action
-        uses: BetaHuhn/deploy-to-vercel-action@v1
+        uses: adamcrews/deploy-to-vercel-action@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -532,9 +546,15 @@ Issues and PRs are very welcome!
 
 The actual source code of this Action is in the `src` folder.
 
+Use the Node version in `.node-version` (24) so that your build output matches CI.
+
 - run `yarn lint` or `npm run lint` to run eslint.
 - run `yarn start` or `npm run start` to run the Action locally.
 - run `yarn build` or `npm run build` to produce a production version of [deploy-to-vercel-action](https://github.com/BetaHuhn/deploy-to-vercel-action) in the `dist` folder.
+
+`dist/index.js` is committed to the repository because that is what the Action actually executes. CI fails if `dist/` does not match a fresh `npm run build`, so run the build and commit the result with any change to `src`.
+
+Note that `@actions/core` v3+ and `@actions/github` v9+ are ESM-only. This project is CommonJS bundled by `ncc`, so those dependencies are intentionally held at the newest CommonJS majors (`2.x` and `8.x`). Upgrading them requires converting `src` to ESM first.
 
 ## ❔ About
 
