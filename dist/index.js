@@ -32862,6 +32862,8 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const core = __nccwpck_require__(7484)
+const os = __nccwpck_require__(857)
+const path = __nccwpck_require__(6928)
 const { exec, removeSchema } = __nccwpck_require__(6636)
 
 const {
@@ -32925,7 +32927,13 @@ const init = () => {
 	let deploymentUrl
 
 	const runVercel = (args) => {
-		return exec('npx', [ '--yes', `vercel@${ VERCEL_CLI_VERSION }`, ...args ], WORKING_DIRECTORY)
+		// npx must not run inside the consumer repo. Their package.json overrides (e.g.
+		// webpack) make npm 11 fail with EOVERRIDE before the CLI starts. Point Vercel
+		// at the project with --cwd instead.
+		const projectDir = path.resolve(WORKING_DIRECTORY || process.cwd())
+		const npxCwd = process.env.RUNNER_TEMP || os.tmpdir()
+
+		return exec('npx', [ '--yes', `vercel@${ VERCEL_CLI_VERSION }`, '--cwd', projectDir, ...args ], npxCwd)
 	}
 
 	const deploy = async (commit) => {
