@@ -32929,8 +32929,8 @@ const init = () => {
 	const runVercel = (args) => {
 		// npx must not run inside the consumer repo. Their package.json overrides (e.g.
 		// webpack) make npm 11 fail with EOVERRIDE before the CLI starts. Point Vercel
-		// at the project with --cwd after the subcommand: putting --cwd first makes
-		// CLI 59 treat `alias set …` as extra deploy paths.
+		// at the project with --cwd after the subcommand. CLI 59 parses a leading
+		// --cwd / --token as a deploy and then treats later words as extra paths.
 		const projectDir = path.resolve(WORKING_DIRECTORY || process.cwd())
 		const npxCwd = process.env.RUNNER_TEMP || os.tmpdir()
 
@@ -32992,7 +32992,7 @@ const init = () => {
 	const assignAlias = async (aliasUrl) => {
 		core.debug(`Starting: assignAlias`)
 		core.debug(`assignAlias aliasUrl: ${ aliasUrl }`)
-		const commandArguments = [ `--token=${ VERCEL_TOKEN }`, '--yes', 'alias', 'set', deploymentUrl, removeSchema(aliasUrl) ]
+		const commandArguments = [ 'alias', 'set', deploymentUrl, removeSchema(aliasUrl), `--token=${ VERCEL_TOKEN }` ]
 
 		if (VERCEL_SCOPE) {
 			commandArguments.push(`--scope=${ VERCEL_SCOPE }`)
